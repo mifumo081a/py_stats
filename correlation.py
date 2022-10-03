@@ -73,7 +73,7 @@ def corr_ratio(df: pd.DataFrame, column: str):
     c = len(df[column].unique())
     n = len(df)
     f = (s_between/(c-1)) / (s_within/(n-c))
-    p_values = sp.stats.f.cdf(f, c-1, n-c)
+    p_values = sp.stats.f.sf(f, c-1, n-c)
     p_df = pd.DataFrame(p_values.reshape(1, -1), columns=df_total.columns, index=[column])    
         
     return cr_df, p_df
