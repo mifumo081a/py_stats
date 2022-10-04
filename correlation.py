@@ -9,7 +9,7 @@ def corr(df: pd.DataFrame):
     D = np.diag(np.power(np.diag(cov), -0.5))
     corr = np.dot(np.dot(D, cov), D)
     
-    corr_df = pd.DataFrame(corr, columns=df.columns, index=df.columns)
+    corr_df = pd.DataFrame(corr.copy(), columns=df.columns, index=df.columns)
     
     n = df.shape[0]
     np.fill_diagonal(corr, 0) # ゼロ割防止のために対角成分を0とする
@@ -35,7 +35,7 @@ def pcorr(df: pd.DataFrame):
         D = np.diag(np.power(np.diag(omega), -0.5))
         partialcorr = np.dot(np.dot(D, omega), D) * ((-1) * np.ones_like(D)) ** (np.eye(D.shape[0]) + 1)
         
-        pcorr_df = pd.DataFrame(partialcorr, columns=df.columns, index=df.columns)
+        pcorr_df = pd.DataFrame(partialcorr.copy(), columns=df.columns, index=df.columns)
         # t-test
         n = df.shape[0]
         q = df.shape[1]-2
