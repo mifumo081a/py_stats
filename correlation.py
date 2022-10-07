@@ -1,9 +1,57 @@
 import numpy as np
 import pandas as pd
 import scipy as sp
+from scipy import stats
+import pingouin as pg
 
 
-def corr(df: pd.DataFrame):
+def spearman_corr(df: pd.DataFrame):
+    corr, p_values = stats.spearmanr(df.values)
+    corr_df = pd.DataFrame(corr.copy(), columns=df.columns, index=df.columns)
+    
+    p_df = pd.DataFrame(p_values, index=df.columns, columns=df.columns)
+    
+    mixed = np.tril(corr).copy()
+    mixed += np.triu(p_values)
+    mixed_df = pd.DataFrame(mixed, index=df.columns, columns=df.columns)
+    
+    return corr_df, p_df, mixed_df
+
+
+def partial_spearmanr(df: pd.DataFrame):
+    columns = df.columns
+    r_matrix = []
+    p_matrix = []
+    
+    for x in columns:
+        r_row = []
+        p_row = []
+        for y in columns:
+            if x is not y:
+                covar = list(filter(lambda i: i not in (x, y), columns))
+                stats_df = pg.partial_corr(data=df, x=x, y=y, covar=covar, method="spearman")
+                r_row.append(stats_df.at["spearman", "r"])
+                p_row.append(stats_df.at["spearman", "p-val"])
+            else:
+                covar = None
+                r_row.append(1)
+                p_row.append(1)
+        r_matrix.append(r_row)
+        p_matrix.append(p_row)
+        
+    pcorr, p_values = np.array(r_matrix), np.array(p_matrix)
+    pcorr_df = pd.DataFrame(pcorr.copy(), columns=columns, index=columns)
+    
+    p_df = pd.DataFrame(p_values, index=columns, columns=columns)
+    
+    mixed = np.tril(pcorr).copy()
+    mixed += np.triu(p_values)
+    mixed_df = pd.DataFrame(mixed, index=columns, columns=columns)
+    
+    return pcorr_df, p_df, mixed_df
+
+
+def pearson_corr(df: pd.DataFrame):
     data = df.values
     cov = np.cov(data.T)  
     D = np.diag(np.power(np.diag(cov), -0.5))
@@ -24,7 +72,7 @@ def corr(df: pd.DataFrame):
     return corr_df, p_df, mixed_df
 
 
-def pcorr(df: pd.DataFrame):
+def partial_corr(df: pd.DataFrame):
     data = df.values
     cov = np.cov(data.T)
     #逆行列(精度行列)を求める
