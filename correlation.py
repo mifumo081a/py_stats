@@ -44,6 +44,7 @@ def partial_spearmanr(df: pd.DataFrame):
     
     p_df = pd.DataFrame(p_values, index=columns, columns=columns)
     
+    np.fill_diagonal(pcorr, 0) # ゼロ割防止のために対角成分を0とする
     mixed = np.tril(pcorr).copy()
     mixed += np.triu(p_values)
     mixed_df = pd.DataFrame(mixed, index=columns, columns=columns)
